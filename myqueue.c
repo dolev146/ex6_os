@@ -5,7 +5,31 @@
 node_t *head = NULL;
 node_t *tail = NULL;
 
-void enQ(void *element)
+void NcreateQ(){
+    if(head != NULL){
+        printf("Queue already exists\n");
+        return;
+    }
+    head = NULL;
+    tail = NULL;
+}
+
+void NdestroyQ(){
+    if(head == NULL){
+        printf("Queue does not exist\n");
+        return;
+    }
+    node_t *temp = head;
+    while(temp != NULL){
+        head = head->next;
+        free(temp);
+        temp = head;
+    }
+    head = NULL;
+    tail = NULL;
+}
+
+void NenQ(void *element)
 {
     node_t *newnode = (node_t *)malloc(sizeof(node_t));
     newnode->element = element;
@@ -22,7 +46,7 @@ void enQ(void *element)
 }
 
 // return the pointer to a client_socket
-void *deQ()
+void *NdeQ()
 {
     if (head == NULL)
     {

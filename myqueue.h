@@ -7,9 +7,9 @@ struct node
     void *element;
 };
 typedef struct node node_t;
-void enQ(void *element);
-void* deQ();
-void createQ();
-void destroyQ();
+void NenQ(void *element);
+void* NdeQ();
+void NcreateQ();
+void NdestroyQ();
 
 #endif // MYQUEUE_H_
