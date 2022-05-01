@@ -105,7 +105,7 @@ int main()
     pthread_t th[6];
     for (int i = 0; i < 6; i++)
     {
-        if (i < 4)
+        if (i < 3)
         {
             if (pthread_create(&th[i], NULL, &deQ, NULL) != 0)
             {

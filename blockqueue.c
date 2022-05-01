@@ -7,13 +7,14 @@
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t queueu_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void *enQ(void *element)
+void *enQ(void *args)
 {
     pthread_mutex_lock(&queueu_mutex);
     NenQ(element);
     printf("enQ: %d\n", *(int *)element);
     pthread_mutex_unlock(&queueu_mutex);
-    pthread_cond_signal(&condition_var);
+    // dont know what to choose broadcat or signal
+    pthread_cond_broadcast(&condition_var);
     return NULL;
 }
 
@@ -31,12 +32,13 @@ void *deQ(void *args)
     return pointer;
 }
 
-void createQ()
+pmyqueue_t createQ()
 {
     pthread_mutex_lock(&queueu_mutex);
-    NcreateQ();
+    pmyqueue_t result = NcreateQ();
     printf("createQ\n");
     pthread_mutex_unlock(&queueu_mutex);
+    return result;
 }
 void destroyQ()
 {

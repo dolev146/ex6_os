@@ -2,66 +2,90 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-node_t *head = NULL;
-node_t *tail = NULL;
 
-void NcreateQ(){
-    if(head != NULL){
-        printf("Queue already exists\n");
-        return;
-    }
-    head = NULL;
-    tail = NULL;
+pmyqueue_t NcreateQ()
+{
+    pmyqueue_t queue = (pmyqueue_t)malloc(sizeof(myqueue_t));
+    queue->head = NULL;
+    queue->tail = NULL;
+    pthread_mutex_init(&queue->queueu_mutex, NULL);
+    pthread_cond_init(&queue->condition_var, NULL);
+    return queue;
 }
 
-void NdestroyQ(){
-    if(head == NULL){
+void NdestroyQ(pmyqueue_t queue)
+{
+
+    if (queue->head == NULL)
+    {
         printf("Queue does not exist\n");
         return;
     }
-    node_t *temp = head;
-    while(temp != NULL){
-        head = head->next;
+    pthread_mutex_destroy(&queue->queueu_mutex);
+    pthread_cond_destroy(&queue->condition_var);
+    // free all the elements of the queue with while loop
+    while (queue->head != NULL)
+    {
+        pnode temp = queue->head;
+        queue->head = queue->head->next;
         free(temp);
-        temp = head;
     }
-    head = NULL;
-    tail = NULL;
+    // dont know if we really need to free the queue itself or not co-pilot added this
+    // TODO check if i need this
+    // TODO 
+    free(queue);
 }
 
-void NenQ(void *element)
+void NenQ(void *element, pmyqueue_t queue)
 {
-    node_t *newnode = (node_t *)malloc(sizeof(node_t));
-    newnode->element = element;
-    newnode->next = NULL;
-    if (tail == NULL)
+    pnode new_node = (pnode)malloc(sizeof(node_t));
+    new_node->element = element;
+    new_node->next = NULL;
+    if (queue->head == NULL)
     {
-        head = newnode;
+        queue->head = new_node;
+        queue->tail = new_node;
     }
     else
     {
-        tail->next = newnode;
+        queue->tail->next = new_node;
+        queue->tail = new_node;
     }
-    tail = newnode;
 }
 
 // return the pointer to a tail node
-void* NdeQ()
+void *NdeQ(pmyqueue_t queue)
 {
-    if (head == NULL)
+    if (queue->head == NULL)
     {
+        printf("Queue is empty\n");
         return NULL;
     }
-    else
+    pnode temp = queue->head;
+    queue->head = queue->head->next;
+    if (queue->head == NULL)
     {
-        void *result = head->element;
-        node_t *temp = head;
-        head = head->next;
-        if (head == NULL)
-        {
-            tail = NULL;
-        }
-        free(temp);
-        return result;
+        queue->tail = NULL;
     }
+    return temp->element;
+    // TODO need to check if i need to free temp or not
 }
+
+// {
+//     if (head == NULL)
+//     {
+//         return NULL;
+//     }
+//     else
+//     {
+//         void *result = head->element;
+//         node_t *temp = head;
+//         head = head->next;
+//         if (head == NULL)
+//         {
+//             tail = NULL;
+//         }
+//         free(temp);
+//         return result;
+//     }
+// }
