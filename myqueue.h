@@ -6,6 +6,7 @@ struct node
     struct node *next;
     void *element;
 };
+
 typedef struct node node_t;
 void NenQ(void *element);
 void* NdeQ();

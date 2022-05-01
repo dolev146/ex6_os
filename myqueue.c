@@ -45,8 +45,8 @@ void NenQ(void *element)
     tail = newnode;
 }
 
-// return the pointer to a client_socket
-void *NdeQ()
+// return the pointer to a tail node
+void* NdeQ()
 {
     if (head == NULL)
     {
