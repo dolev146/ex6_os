@@ -1,8 +1,15 @@
 #ifndef BLOCKQUEUE_H
 #define BLOCKQUEUE_H
+#include "myqueue.h"
 
-void *enQ(void *args);
-void *deQ(void *args);
+struct parameters
+{
+    pmyqueue_t queue;
+    void *element;
+};
+
+void *enQ(void *arguments);
+void *deQ(void *arguments);
 pmyqueue_t createQ();
 void destroyQ(pmyqueue_t);
 

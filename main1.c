@@ -88,51 +88,129 @@
 #include <sys/file.h>
 #include <sys/sysinfo.h>
 #include <sys/utsname.h>
-#include <sys/wait.h>
-
-pthread_mutex_t mutexFuel;
-pthread_cond_t condFuel;
-int fuel = 0;
+#include <sys/ptrace.h>
+#include <sys/user.h>
+#include <sys/syscall.h>
+#include <sys/mount.h>
 
 // gcc -o main main.c -lpthread
 
 int main()
 {
 
-    int x = 1;
-    void *p = &x;
+    //*********** run this to see them work  in parallel**************
+    // https://stackoverflow.com/questions/2353371/how-to-do-an-atomic-increment-and-fetch-in-c
+    // int index = 0;
+    // pmyqueue_t queue1 = createQ();
+    // pmyqueue_t queue2 = createQ();
+    // struct parameters *enq_args1 = (struct parameters *)malloc(sizeof(struct parameters));
+    // enq_args1->queue = queue1;
+    // int a = 1;
+    // enq_args1->element = &a;
+    // struct parameters *enq_args2 = (struct parameters *)malloc(sizeof(struct parameters));
+    // enq_args2->queue = queue2;
+    // int b = 1;
+    // enq_args2->element = &b;
 
-    pthread_t th[6];
-    for (int i = 0; i < 6; i++)
-    {
-        if (i < 3)
-        {
-            if (pthread_create(&th[i], NULL, &deQ, NULL) != 0)
-            {
-                printf("Error creating thread\n");
-                exit(1);
-            }
-        }
-        else
-        {
+    // pthread_t th[50];
 
-            if (pthread_create(&th[i], NULL, &enQ, p) != 0)
-            {
-                printf("Error creating thread\n");
-                exit(1);
-            }
-            p = &i;
-        }
-    }
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     if ((i % 2) == 0)
+    //     {
+    //         if (pthread_create(&th[i], NULL, &deQ, enq_args1) != 0)
+    //         {
+    //             printf("Error creating thread\n");
+    //             exit(1);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         if (pthread_create(&th[i], NULL, &deQ, enq_args2) != 0)
+    //         {
+    //             printf("Error creating thread\n");
+    //             exit(1);
+    //         }
+    //     }
+    // }
 
-    for (int i = 0; i < 6; i++)
-    {
-        if (pthread_join(th[i], NULL) != 0)
-        {
-            printf("Error joining thread\n");
-            exit(1);
-        }
-    }
+    // for (int i = 10; i < 50; i++)
+    // {
+    //     if ((i % 2) == 0)
+    //     {
+    //         if (pthread_create(&th[i], NULL, &enQ, enq_args1) != 0)
+    //         {
+    //             printf("Error creating thread\n");
+    //             exit(1);
+    //         }
+    //         enq_args1->element = &index;
+    //         __atomic_fetch_add(&index, 1, __ATOMIC_SEQ_CST);
+    //     }
+    //     else
+    //     {
+    //         if (pthread_create(&th[i], NULL, &enQ, enq_args2) != 0)
+    //         {
+    //             printf("Error creating thread\n");
+    //             exit(1);
+    //         }
+    //         enq_args2->element = &index;
+    //         __atomic_fetch_add(&index, 1, __ATOMIC_SEQ_CST);
+    //     }
+    // }
 
+    //*********** run this to see them work not in parallel**************
+    // for (int i = 0; i < 25; i++)
+    // {
+    //     if (i<5)
+    //     {
+    //         if (pthread_create(&th[i], NULL, &deQ, enq_args1) != 0)
+    //         {
+    //             printf("Error creating thread\n");
+    //             exit(1);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         if (pthread_create(&th[i], NULL, &enQ, enq_args1) != 0)
+    //         {
+    //             printf("Error creating thread\n");
+    //             exit(1);
+    //         }
+    //     }
+    // }
+
+    // for (int i = 25; i < 50; i++)
+    // {
+    //     if (i < 30)
+    //     {
+    //         if (pthread_create(&th[i], NULL, &deQ, enq_args2) != 0)
+    //         {
+    //             printf("Error creating thread\n");
+    //             exit(1);
+    //         }
+    //     }
+    //     else
+    //     {
+
+    //         if (pthread_create(&th[i], NULL, &enQ, enq_args2) != 0)
+    //         {
+    //             printf("Error creating thread\n");
+    //             exit(1);
+    //         }
+
+    //     }
+    // }
+
+    // for (int i = 0; i < 50; i++)
+    // {
+    //     if (pthread_join(th[i], NULL) != 0)
+    //     {
+    //         printf("Error joining thread\n");
+    //         exit(1);
+    //     }
+    // }
+
+    // destroyQ(queue1);
+    // destroyQ(queue2);
     return 0;
 }

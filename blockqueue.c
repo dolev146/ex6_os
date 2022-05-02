@@ -1,49 +1,53 @@
 #include "blockqueue.h"
-#include "myqueue.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
 
-pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
-pthread_mutex_t queueu_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t wrapper_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void *enQ(void *args)
+void *enQ(void *arguments)
 {
-    pthread_mutex_lock(&queueu_mutex);
-    NenQ(element);
-    printf("enQ: %d\n", *(int *)element);
-    pthread_mutex_unlock(&queueu_mutex);
+    struct parameters *args = (struct parameters *)arguments;
+    pmyqueue_t queue = args->queue;
+    void *element = args->element;
+    pthread_mutex_lock(&queue->queueu_mutex);
+    NenQ(element, queue);
+    printf("enQ: %d queue adress %p \n", *(int *)element, queue);
+    pthread_mutex_unlock(&queue->queueu_mutex);
     // dont know what to choose broadcat or signal
-    pthread_cond_broadcast(&condition_var);
+    pthread_cond_broadcast(&queue->condition_var);
     return NULL;
 }
 
-void *deQ(void *args)
+void *deQ(void *arguments)
 {
-    pthread_mutex_lock(&queueu_mutex);
+    struct parameters *args = (struct parameters *)arguments;
+    pmyqueue_t queue = args->queue;
+    void *element = args->element;
+    pthread_mutex_lock(&queue->queueu_mutex);
     void *pointer;
-    while ((pointer = NdeQ()) == NULL)
+    while ((pointer = NdeQ(queue)) == NULL)
     {
-        printf("deQ: waiting\n");
-        pthread_cond_wait(&condition_var, &queueu_mutex);
+        printf("deQ: waiting , queue number %p \n", queue);
+        pthread_cond_wait(&queue->condition_var, &queue->queueu_mutex);
     }
-    printf("deQ: %d\n", *(int *)pointer);
-    pthread_mutex_unlock(&queueu_mutex);
+    printf("deQ: %d , queue number %p \n", *(int *)pointer, queue);
+    pthread_mutex_unlock(&queue->queueu_mutex);
     return pointer;
 }
 
 pmyqueue_t createQ()
 {
-    pthread_mutex_lock(&queueu_mutex);
+    pthread_mutex_lock(&wrapper_mutex);
     pmyqueue_t result = NcreateQ();
-    printf("createQ\n");
-    pthread_mutex_unlock(&queueu_mutex);
+    printf("createQ %p \n", result);
+    pthread_mutex_unlock(&wrapper_mutex);
     return result;
 }
-void destroyQ()
+void destroyQ(pmyqueue_t queue)
 {
-    pthread_mutex_lock(&queueu_mutex);
-    NdestroyQ();
-    printf("destroyQ\n");
-    pthread_mutex_unlock(&queueu_mutex);
+    pthread_mutex_lock(&wrapper_mutex);
+    printf("destroyQ %p\n", queue);
+    NdestroyQ(queue);
+    pthread_mutex_unlock(&wrapper_mutex);
 }
