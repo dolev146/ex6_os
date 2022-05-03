@@ -12,7 +12,7 @@
 void *cientThread(void *arg)
 {
     printf("In thread\n");
-    char message[1000];
+    char message[1024];
 
     char buffer[1024];
     int clientSocket;
@@ -27,7 +27,7 @@ void *cientThread(void *arg)
     serverAddr.sin_family = AF_INET;
 
     // Set port number, using htons function
-    serverAddr.sin_port = htons(5008);
+    serverAddr.sin_port = htons(5009);
 
     // Set IP address to localhost
     serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -35,7 +35,7 @@ void *cientThread(void *arg)
 
     // Connect the socket to the server using the address
     addr_size = sizeof serverAddr;
-    if(connect(clientSocket, (struct sockaddr *)&serverAddr, addr_size))
+    if (connect(clientSocket, (struct sockaddr *)&serverAddr, addr_size))
     {
         perror("connect\n");
         return NULL;
@@ -45,18 +45,18 @@ void *cientThread(void *arg)
     // for (int i = 0; i < 1000; i++)
     // {
     send(clientSocket, message, strlen(message), 0);
-    usleep(5000);
+
     // }
     // printf("finished pushing 100 \n");
 
     bzero(message, sizeof(message));
 
-    if (recv(clientSocket, message, strlen(message), 0) < 0)
+    if (recv(clientSocket, message, 1024, 0) < 0)
     {
         printf("Recv failed\n");
     }
-    printf("message recieved \n");
-    printf("%s\n", message);
+    printf("message recieved  %s\n", message);
+    // printf("%s\n", message);
 
     close(clientSocket);
     pthread_exit(NULL);
@@ -70,6 +70,7 @@ int main()
     {
         if (pthread_create(&tid[i], NULL, cientThread, NULL) != 0)
             printf("Failed to create thread\n");
+        usleep(5000);
         i++;
     }
     sleep(3);

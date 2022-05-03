@@ -4,3 +4,5 @@ main1.o
 myqueue.o
 clienttest
 clienttest.o
+client
+client.o
