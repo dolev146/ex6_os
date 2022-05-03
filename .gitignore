@@ -6,3 +6,6 @@ clienttest
 clienttest.o
 client
 client.o
+myActiveObject.o
+Pipeline.o
+%.o
