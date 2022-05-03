@@ -1,11 +1,11 @@
 CC=g++
 CFlags=-g -Wall
 BINS=main1
-OBJS=main1.o myqueue.o blockqueue.o 
+Main1OBJ=main1.o myqueue.o blockqueue.o ActiveObject.o Pipeline.o
 
 all: $(BINS)
 
-main1: $(OBJS)
+main1: $(Main1OBJ)
 	$(CC) $(CFlags) -o $@  $^ -lpthread
 
 %: %.cpp

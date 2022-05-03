@@ -20,6 +20,11 @@
     },
     "peacock.color": "#832561",
     "files.associations": {
-        "myqueue.h": "c"
+        "myqueue.h": "c",
+        "acitveobject.h": "c",
+        "blockqueue.h": "c",
+        "pipeline.h": "c",
+        "stdio.h": "c",
+        "myactiveobject.h": "c"
     }
 }

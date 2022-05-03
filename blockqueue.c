@@ -32,6 +32,7 @@ void *deQ(void *arguments)
         pthread_cond_wait(&queue->condition_var, &queue->queueu_mutex);
     }
     printf("deQ: %d , queue number %p \n", *(int *)pointer, queue);
+    element = pointer;
     pthread_mutex_unlock(&queue->queueu_mutex);
     return pointer;
 }
