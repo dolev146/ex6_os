@@ -303,7 +303,7 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <pthread.h>
-#define SERVERPORT 5003
+#define SERVERPORT 5008
 #define BUFSIZE 4096
 #define SOCKETERROR (-1)
 #define SERVER_BACKLOG 100
