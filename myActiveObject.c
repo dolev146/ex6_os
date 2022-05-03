@@ -9,7 +9,7 @@
  * and will call the function to deal with the queue element
  * after the function is done, it will call the function to cleanup
  */
-struct activeobject *newAO(pmyqueue_t *queueparam, void (*firstfunc)(void *), void (*secondfunc)(void *))
+struct activeobject *newAO(pmyqueue_t *queueparam, void *(*firstfunc)(void *), void *(*secondfunc)(void *))
 {
     struct activeobject *ao = (struct activeobject *)malloc(sizeof(struct activeobject));
     ao->queue = *queueparam;

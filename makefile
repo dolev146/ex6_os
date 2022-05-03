@@ -1,12 +1,12 @@
 CC=g++
 CFlags=-g -Wall
 BINS=main1
-Main1OBJ=main1.o myqueue.o blockqueue.o ActiveObject.o Pipeline.o
+Main1OBJ=main1.o myqueue.o blockqueue.o myActiveObject.o Pipeline.o
 
-all: $(BINS)
+all: $(BINS) main1
 
 main1: $(Main1OBJ)
-	$(CC) $(CFlags) -o $@  $^ -lpthread
+	$(CC) $(CFlags) -o $@  $^ -lpthread ; ./main1
 
 %: %.cpp
 	$(CC) $(CFlags) -c -o $@  $^ -lpthread

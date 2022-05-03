@@ -303,12 +303,74 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <pthread.h>
-
 #define SERVERPORT 5003
 #define BUFSIZE 4096
 #define SOCKETERROR (-1)
 #define SERVER_BACKLOG 100
 #define THREAD_POOL_SIZE 20
+#define SHIFT 1
+
+struct sendmsgwithao
+{
+    char *message;
+    int socket;
+};
+
+// ceaser cipher
+void *ceaser_cipher(void *param)
+{
+    char *msg = (char *)param;
+    int i;
+    for (i = 0; i < strlen(msg); i++)
+    {
+        if (msg[i] >= 'a' && msg[i] <= 'z')
+        {
+            msg[i] = msg[i] + SHIFT;
+            if (msg[i] > 'z')
+            {
+                msg[i] = msg[i] - 26;
+            }
+        }
+        else if (msg[i] >= 'A' && msg[i] <= 'Z')
+        {
+            msg[i] = msg[i] + SHIFT;
+            if (msg[i] > 'Z')
+            {
+                msg[i] = msg[i] - 26;
+            }
+        }
+    }
+    return NULL;
+}
+
+// upper to lower and lower to upper
+void *uppertolowerandlowertoupper(void *param)
+{
+    char *msg = (char *)param;
+    int i;
+    for (i = 0; i < strlen(msg); i++)
+    {
+        if (msg[i] >= 'A' && msg[i] <= 'Z')
+        {
+            msg[i] = msg[i] + 32;
+        }
+        else if (msg[i] >= 'a' && msg[i] <= 'z')
+        {
+            msg[i] = msg[i] - 32;
+        }
+    }
+    return NULL;
+}
+
+void *send_message(void *param)
+{
+    struct sendmsgwithao *strc = (struct sendmsgwithao *)param;
+    char *msg = strc->message;
+    int client_socket = strc->socket;
+    send(client_socket, msg, strlen(msg), 0);
+    free(strc);
+    return NULL;
+}
 
 pthread_t thread_pool[THREAD_POOL_SIZE];
 
@@ -318,10 +380,10 @@ typedef struct sockaddr SA;
 pthread_mutex_t server_mutex = PTHREAD_MUTEX_INITIALIZER;
 char client_message[1024];
 
+struct pipeline *pointer_pipeline;
 struct activeobject *ao1;
 struct activeobject *ao2;
 struct activeobject *ao3;
-
 
 void *handle_connection(void *p_client_socket);
 int check(int exp, const char *msg);
@@ -329,23 +391,38 @@ void *thread_function_deq(void *arg);
 
 int main(int argc, char **argv)
 {
+    //
+    pthread_mutex_init(&server_mutex, NULL);
+
     // create a blocked queue
     pmyqueue_t queue1 = createQ();
-
+    // malloc pointer_pipeline
+    pointer_pipeline = (struct pipeline *)malloc(sizeof(struct pipeline));
     // malloc ao1
     ao1 = (struct activeobject *)malloc(sizeof(struct activeobject));
-    ao1->firstfunc = 
+    ao1->firstfunc = &ceaser_cipher;
     // malloc ao2
     ao2 = (struct activeobject *)malloc(sizeof(struct activeobject));
+    ao2->firstfunc = &uppertolowerandlowertoupper;
     // malloc ao3
     ao3 = (struct activeobject *)malloc(sizeof(struct activeobject));
+    ao3->firstfunc = &send_message;
+    // set active object to pipeline
+    pointer_pipeline->first = ao1;
+    pointer_pipeline->second = ao2;
+    pointer_pipeline->third = ao3;
 
+    struct parameters *param1 = (struct parameters *)malloc(sizeof(struct parameters));
+    param1->queue = queue1;
+    param1->element = NULL;
+
+    // deQ(param1);
     // first off we create a bunch of threads
     for (int i = 0; i < THREAD_POOL_SIZE; i++)
     {
-        pthread_create(&thread_pool[i], NULL, &thread_function_deq, NULL);
+        pthread_create(&thread_pool[i], NULL, &thread_function_deq, (void *)param1);
     }
-
+    
     //
     int server_socket, client_socket, addr_size;
     SA_IN server_addr, client_addr;
@@ -379,20 +456,21 @@ int main(int argc, char **argv)
         enq_args1->element = (void *)pclient;
         enQ(enq_args1);
     }
+
     close(server_socket);
     printf("server socket finish  %d", server_socket);
+    pthread_mutex_destroy(&server_mutex);
+    return 0;
 }
 
 void *thread_function_deq(void *arg)
 {
     while (true)
     {
-        struct parameters *deq_args1 = (struct parameters *)arg;
-        void *element = deQ(deq_args1->queue);
+        void *element = deQ(arg);
         handle_connection(element);
     }
 }
-
 
 int check(int exp, const char *msg)
 {
@@ -409,14 +487,43 @@ void *handle_connection(void *p_client_socket)
     int client_socket = *((int *)p_client_socket);
     free(p_client_socket);
     recv(client_socket, client_message, 1024, 0);
+    pthread_mutex_lock(&server_mutex);
     // now we will pass the client_message in a pipeline of all three active objects
-
-    char buffer[BUFSIZE] = "hi from server ";
-    printf("%s", client_message);
-    send(client_socket, buffer, 1024, 0);
+    // first we will pass it to ceaser cipher
+    pthread_t t1;
+    struct activeobject *first_ao1 = (struct activeobject *)pointer_pipeline->first;
+    pthread_create(&t1, NULL, first_ao1->firstfunc, (void *)client_message);
+    pthread_join(t1, NULL);
+    pthread_t t2;
+    struct activeobject *first_ao2 = (struct activeobject *)pointer_pipeline->second;
+    pthread_create(&t2, NULL, first_ao2->firstfunc, (void *)client_message);
+    pthread_join(t2, NULL);
+    pthread_t t3;
+    struct activeobject *first_ao3 = (struct activeobject *)pointer_pipeline->third;
+    struct sendmsgwithao *strc = (struct sendmsgwithao *)malloc(sizeof(struct sendmsgwithao));
+    strc->message = client_message;
+    strc->socket = client_socket;
+    pthread_create(&t3, NULL, first_ao3->firstfunc, (void *)strc);
+    pthread_join(t3, NULL);
     close(client_socket);
+    pthread_mutex_unlock(&server_mutex);
     return NULL;
 }
+// then we will pass it to upper to lower and lower to upper
+
+// pointer_pipeline->first->firstfunc(client_message);
+
+// pointer_pipeline->first    ->firstfunc(client_message);
+// then we will pass it to upper to lower and lower to upper
+// ao2->firstfunc(client_message);
+
+// char buffer[BUFSIZE] = "hi from server ";
+// printf("%s", client_message);
+// send(client_socket, buffer, 1024, 0);
+// close(client_socket);
+// pthread_mutex_unlock(&server_mutex);
+// return NULL;
+// }
 
 // gcc -o main main.c -lpthread
 

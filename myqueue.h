@@ -12,7 +12,7 @@ typedef struct node
 
 typedef struct myqueue_t
 {
-    pthread_mutex_t queueu_mutex;
+    pthread_mutex_t queue_mutex;
     pthread_cond_t condition_var;
     pnode head;
     pnode tail;

@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 pmyqueue_t NcreateQ()
 {
     pmyqueue_t queue = (pmyqueue_t)malloc(sizeof(myqueue_t));
     queue->head = NULL;
     queue->tail = NULL;
-    pthread_mutex_init(&queue->queueu_mutex, NULL);
+    // pthread init cond
+    pthread_mutex_init(&queue->queue_mutex, NULL);
     pthread_cond_init(&queue->condition_var, NULL);
     return queue;
 }
@@ -21,7 +21,7 @@ void NdestroyQ(pmyqueue_t queue)
         printf("Queue does not exist\n");
         return;
     }
-    pthread_mutex_destroy(&queue->queueu_mutex);
+    pthread_mutex_destroy(&queue->queue_mutex);
     pthread_cond_destroy(&queue->condition_var);
     // free all the elements of the queue with while loop
     while (queue->head != NULL)
@@ -32,7 +32,7 @@ void NdestroyQ(pmyqueue_t queue)
     }
     // dont know if we really need to free the queue itself or not co-pilot added this
     // TODO check if i need this
-    // TODO 
+    // TODO
     free(queue);
 }
 

@@ -23,6 +23,7 @@
 #include <sys/shm.h>
 #include <sys/sem.h>
 #include <sys/msg.h>
+#include "myqueue.h"
 
 // make a struct to store the information of the pipeline
 // the pipeline will contain three active objects
@@ -34,10 +35,10 @@
 
 struct pipeline
 {
-    struct activeObject *current;
-    struct activeObject *first;
-    struct activeObject *second;
-    struct activeObject *third;
+    pmyqueue_t *queue;
+    struct activeobject *first;
+    struct activeobject *second;
+    struct activeobject *third;
 };
 
 #endif // PIPLINE_H
